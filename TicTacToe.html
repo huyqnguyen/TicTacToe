@@ -85,8 +85,12 @@
 		if (calculateWinner(squares) || squares[i]) {
 			return;
 		}
+		
         squares[i] = 'X';	
-		squares[play(squares, this.state.turn)] = 'O';
+		if(this.state.turn < 5)
+		{
+			squares[play(squares, this.state.turn)] = 'O';
+		}
 		
         this.setState({	
 			squares: squares,
@@ -98,12 +102,9 @@
 	  let status;
 	  if (winner) {
 		status = 'Winner: ' + winner;
-	  } else {
-		status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
-	  }
+	  } 
       return (
         <div>
-          <div className="status">{status}</div>
           <div className="board-row">
             {this.renderSquare(0)}
             {this.renderSquare(1)}
@@ -119,6 +120,7 @@
             {this.renderSquare(7)}
             {this.renderSquare(8)}
           </div>
+		  <div className="status">{status}</div>
         </div>
     )}
   }
@@ -130,10 +132,6 @@
           <div className="game-board">
             <Board />
           </div>
-          <div className="game-info">
-            <div>{/* status */}</div>
-            <ol>{/* TODO */}</ol>
-          </div>
         </div>
       );
     }
@@ -144,7 +142,7 @@
     document.getElementById('container')
   );
   
-   function evaluatePosition(squares, p)    {
+   function evaluatePosition(squares)    {
 		const Heuristic_Array = [
 		  [     0,   -10,  -100, -1000 ],
 		  [    10,     0,     0,     0 ],
@@ -163,39 +161,40 @@
 		  [ 2, 4, 6 ]
 		];
 	   
-	   
 		var player, opponent, sum = 0, i, j, piece;
 
 		for (i = 0; i < 8; i++)  {
 			player = opponent = 0;
 			for (j = 0; j < 3; j++)  {
 				piece = squares[threeInARow[i][j]];
-				if ((piece == 3 && p == 'X') || (piece == 5 && p == 'O'))
+				if (piece == 'O')
 					player++;
-				else if (piece != 2)
+				else if (piece == 'X')
 					opponent++;
 			}
-			sum += Heuristic_Array[player][opponent];
+
+			sum += Heuristic_Array[opponent][player];
 		}
 		return sum;
+		
     }
   
   
   function play(squares, turn)   {
         var i, k, heuristic = -10000, utility, best = 0, worst, tmp;
-		var player = (turn & 1) ? 'X' : 'O';
-        var opponent = (turn & 1) ? 'O' : 'X';
+		var player = 'O';
+        var opponent = 'X';
 
         for(k = 0; k < 9; k++)  {
             if(squares[k] == null) { // found a blank square
-                squares[k] = (turn & 1) ? 3 : 5;  // try playing this move
-                utility = evaluatePosition(squares, player);
+                squares[k] = 'O';  // try playing this move
+                utility = evaluatePosition(squares);
 
                 worst = -10000;     // find the worst your opponent could do
                 for (i = 0; i < 9; i++)  {
-                    if(squares[i] == 2) { // simulate a move by opponent
-                        squares[i] = (turn & 1) ? 5 : 3;
-                        tmp = evaluatePosition(squares, opponent);
+                    if(squares[i] == null) { // simulate a move by opponent
+                        squares[i] = 'X';
+                        tmp = evaluatePosition(squares);
                         if(tmp > worst)
                             worst = tmp;
                         squares[i] = null;
