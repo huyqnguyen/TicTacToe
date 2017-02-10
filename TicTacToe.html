@@ -173,7 +173,8 @@
 					opponent++;
 			}
 
-			sum += Heuristic_Array[opponent][player];
+			sum += Heuristic_Array[player][opponent];
+
 		}
 		return sum;
 		
@@ -189,13 +190,13 @@
             if(squares[k] == null) { // found a blank square
                 squares[k] = 'O';  // try playing this move
                 utility = evaluatePosition(squares);
-
+				
                 worst = -10000;     // find the worst your opponent could do
                 for (i = 0; i < 9; i++)  {
                     if(squares[i] == null) { // simulate a move by opponent
                         squares[i] = 'X';
                         tmp = evaluatePosition(squares);
-                        if(tmp > worst)
+                        if(tmp < worst)
                             worst = tmp;
                         squares[i] = null;
                     }
@@ -203,8 +204,7 @@
 
                 // opponent had no legal move
                 if(worst == -10000)
-                    worst = 0;
-
+                    worst = 0;				
                 utility -= worst;
                 if(utility > heuristic) {
                     heuristic = utility;
