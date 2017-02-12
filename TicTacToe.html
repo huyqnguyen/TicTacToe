@@ -73,23 +73,30 @@
     constructor() {
       super();
       this.state = {
-        squares: Array(9).fill(null),
+        squares: [
+				  [null, null, null],
+				  [null, null, null],
+				  [null, null, null],
+				],
 		turn : 1,
       };
     };
-    renderSquare(i) {
-      return <Square value={this.state.squares[i]} onClick={() => this.handleClick(i)} />;
+    renderSquare(i,j) {
+      return <Square value={this.state.squares[i][j]} onClick={() => this.handleClick(i,j)} />;
     };
-    handleClick(i) {
+    handleClick(i,j) {
+		console.log(i);
+		console.log(j);
 		const squares = this.state.squares.slice();
-		if (calculateWinner(squares) || squares[i]) {
-			return;
-		}
+		//if (calculateWinner(squares) || squares[i]) {
+		//	return;
+		//}
 		
-        squares[i] = 'X';	
+        squares[i][j] = 'X';	
 		if(this.state.turn < 5)
 		{
-			squares[play(squares, this.state.turn)] = 'O';
+			var move = findBestMove(squares);
+			squares[move.x][move.y] = 'O';
 		}
 		
         this.setState({	
@@ -106,19 +113,19 @@
       return (
         <div>
           <div className="board-row">
-            {this.renderSquare(0)}
-            {this.renderSquare(1)}
-            {this.renderSquare(2)}
+            {this.renderSquare(0,0)}
+            {this.renderSquare(0,1)}
+            {this.renderSquare(0,2)}
           </div>
           <div className="board-row">
-            {this.renderSquare(3)}
-            {this.renderSquare(4)}
-            {this.renderSquare(5)}
+            {this.renderSquare(1,0)}
+            {this.renderSquare(1,1)}
+            {this.renderSquare(1,2)}
           </div>
           <div className="board-row">
-            {this.renderSquare(6)}
-            {this.renderSquare(7)}
-            {this.renderSquare(8)}
+            {this.renderSquare(2,0)}
+            {this.renderSquare(2,1)}
+            {this.renderSquare(2,2)}
           </div>
 		  <div className="status">{status}</div>
         </div>
@@ -142,7 +149,7 @@
     document.getElementById('container')
   );
   
-   function evaluatePosition(squares)    {
+    function evaluatePosition(squares)    {
 		const Heuristic_Array = [
 		  [     0,   -10,  -100, -1000 ],
 		  [    10,     0,     0,     0 ],
@@ -179,6 +186,183 @@
 		
     }
   
+	function evaluate(squares)
+	{
+		// Checking for Rows for X or O victory.
+		for (var row = 0; row<3; row++)
+		{
+			if (squares[row][0]==squares[row][1] &&
+				squares[row][1]==squares[row][2])
+			{
+				if (squares[row][0]== 'O')
+					return +10;
+				else if (squares[row][0]== 'X')
+					return -10;
+			}
+		}
+	 
+		// Checking for Columns for X or O victory.
+		for (var col = 0; col<3; col++)
+		{
+			if (squares[0][col]==squares[1][col] &&
+				squares[1][col]==squares[2][col])
+			{
+				if (squares[0][col]== 'O')
+					return +10;
+	 
+				else if (squares[0][col]== 'X')
+					return -10;
+			}
+		}
+	 
+		// Checking for Diagonals for X or O victory.
+		if (squares[0][0]==squares[1][1] && squares[1][1]==squares[2][2])
+		{
+			if (squares[0][0]== 'O')
+				return +10;
+			else if (squares[0][0]== 'X')
+				return -10;
+		}
+	 
+		if (squares[0][2]==squares[1][1] && squares[1][1]==squares[2][0])
+		{
+			if (squares[0][2]== 'O')
+				return +10;
+			else if (squares[0][2]== 'X')
+				return -10;
+		}
+	 
+		// Else if none of them have won then return 0
+		return 0;
+	}
+
+	function isMovesLeft(board)
+	{
+		for (var i = 0; i<3; i++)
+			for (var j = 0; j<3; j++)
+				if (board[i][j]== null)
+					return true;
+		return false;
+	}
+	function minimax(board ,depth ,isMax)
+	{
+		var score = evaluate(board);
+	 
+		// If Maximizer has won the game return his/her
+		// evaluated score
+		if (score == 10)
+			return score;
+	 
+		// If Minimizer has won the game return his/her
+		// evaluated score
+		if (score == -10)
+			return score;
+	 
+		// If there are no more moves and no winner then
+		// it is a tie
+		if (isMovesLeft(board)==false)
+			return 0;
+	 
+		// If this maximizer's move
+		if (isMax)
+		{
+			var best = -1000;
+	 
+			// Traverse all cells
+			for (var i = 0; i<3; i++)
+			{
+				for (var j = 0; j<3; j++)
+				{
+					// Check if cell is empty
+					if (board[i][j]== null)
+					{
+						// Make the move
+						board[i][j] = 'O';
+	 
+						// Call minimax recursively and choose
+						// the maximum value
+						var score = minimax(board, depth+1, !isMax)
+						if(score < best)
+							best = score;
+							
+						// Undo the move
+						board[i][j] = null;
+					}
+				}
+			}
+			return best;
+		}
+	 
+		// If this minimizer's move
+		else
+		{
+			var best = 1000;
+	 
+			// Traverse all cells
+			for (var i = 0; i<3; i++)
+			{
+				for (var j = 0; j<3; j++)
+				{
+					// Check if cell is empty
+					if (board[i][j]== null)
+					{
+						// Make the move
+						board[i][j] = 'X';
+	 
+						// Call minimax recursively and choose
+						// the minimum value
+						var score = minimax(board, depth+1, !isMax)
+						if(score > best)
+							best = score;
+	 
+						// Undo the move
+						board[i][j] = null;
+					}
+				}
+			}
+			return best;
+		}
+	}
+  
+	function findBestMove(board)
+	{
+		var bestVal = -1000;
+		var bestMove = {x: 0, y : 0};
+	 
+		// Traverse all cells, evalutae minimax function for
+		// all empty cells. And return the cell with optimal
+		// value.
+		for (var i = 0; i<3; i++)
+		{
+			for (var j = 0; j<3; j++)
+			{
+				// Check if celll is empty
+				if (board[i][j]== null)
+				{
+					// Make the move
+					board[i][j] = 'O';
+	 
+					// compute evaluation function for this
+					// move.
+					var moveVal = minimax(board, 0, false);
+	 
+					// Undo the move
+					board[i][j] = null;
+	 
+					// If the value of the current move is
+					// more than the best value, then update
+					// best/
+					if (moveVal > bestVal)
+					{
+						bestMove.x = i;
+						bestMove.y = j;
+						bestVal = moveVal;
+					}
+				}
+			}
+		}
+		return bestMove;
+	}
   
   function play(squares, turn)   {
         var i, k, heuristic = -10000, utility, best = 0, worst, tmp;
