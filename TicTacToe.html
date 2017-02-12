@@ -85,12 +85,10 @@
       return <Square value={this.state.squares[i][j]} onClick={() => this.handleClick(i,j)} />;
     };
     handleClick(i,j) {
-		console.log(i);
-		console.log(j);
 		const squares = this.state.squares.slice();
-		//if (calculateWinner(squares) || squares[i]) {
-		//	return;
-		//}
+		if (calculateWinner(squares) || squares[i][j]) {
+			return;
+		}
 		
         squares[i][j] = 'X';	
 		if(this.state.turn < 5)
@@ -282,7 +280,7 @@
 						// Call minimax recursively and choose
 						// the maximum value
 						var score = minimax(board, depth+1, !isMax)
-						if(score < best)
+						if(score > best)
 							best = score;
 							
 						// Undo the move
@@ -312,7 +310,7 @@
 						// Call minimax recursively and choose
 						// the minimum value
 						var score = minimax(board, depth+1, !isMax)
-						if(score > best)
+						if(score < best)
 							best = score;
 	 
 						// Undo the move
@@ -403,19 +401,21 @@
   
   function calculateWinner(squares) {
 	const  threeInARow = [
-	  [ 0, 1, 2 ],
-	  [ 3, 4, 5 ],
-	  [ 6, 7, 8 ],
-	  [ 0, 3, 6 ],
-	  [ 1, 4, 7 ],
-	  [ 2, 5, 8 ],
-	  [ 0, 4, 8 ],
-	  [ 2, 4, 6 ]
+	  [ [0,0], [0,1], [0,2] ],
+	  [ [1,0], [1,1], [1,2] ],
+	  [ [2,0], [2,1], [2,2] ],
+	  [ [0,0], [1,0], [2,0] ],
+	  [ [0,1], [1,1], [2,1] ],
+	  [ [0,2], [1,2], [2,2] ],
+	  [ [0,0], [1,1], [2,2] ],
+	  [ [0,2], [1,1], [2,0] ]
 	];
     for (let i = 0; i < threeInARow.length; i++) {
       const [a, b, c] = threeInARow[i];
-      if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-        return squares[a];
+	  
+	  console.log(a + " " + b + " " + c);
+      if (squares[a[0]][a[1]] && squares[a[0]][a[1]] === squares[b[0]][b[1]] && squares[a[0]][a[1]] === squares[c[0]][c[1]]) {
+        return squares[a[0]][a[1]];
       }
     }
     return null;
