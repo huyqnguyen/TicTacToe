@@ -412,8 +412,6 @@
 	];
     for (let i = 0; i < threeInARow.length; i++) {
       const [a, b, c] = threeInARow[i];
-	  
-	  console.log(a + " " + b + " " + c);
       if (squares[a[0]][a[1]] && squares[a[0]][a[1]] === squares[b[0]][b[1]] && squares[a[0]][a[1]] === squares[c[0]][c[1]]) {
         return squares[a[0]][a[1]];
       }
